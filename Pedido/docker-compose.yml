@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+
+  postgres-pedido:
+    image: postgres:15
+    container_name: postgres-pedido
+    environment:
+      POSTGRES_DB: pedidodb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+     - pedido_pgdata:/var/lib/postgresql/data
+
+volumes:
+  pedido_pgdata:

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  pedido-receiver-service:
+    build:
+     context: ./pedido-receiver-service
+    container_name: pedido-receiver-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - pedido-service

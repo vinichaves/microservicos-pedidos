@@ -1,0 +1,2 @@
+docker run -d --hostname rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+97504ef09660da3308a0fc0b3d392e366028dc1fd3c37ab29c0bdd8fe9323dd0

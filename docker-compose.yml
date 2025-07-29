@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+
+  ####################### BANCO DE DADOS ########################
+
+  postgres-cliente:
+    image: postgres:15
+    container_name: postgres-cliente
+    environment:
+      POSTGRES_DB: clientedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - cliente_pgdata:/var/lib/postgresql/data
+
+  postgres-produto:
+    image: postgres:15
+    container_name: postgres-produto
+    environment:
+      POSTGRES_DB: produtodb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - produto_pgdata:/var/lib/postgresql/data
+
+  postgres-estoque:
+    image: postgres:15
+    container_name: postgres-estoque
+    environment:
+      POSTGRES_DB: estoquedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - estoque_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  postgres-pedido:
+    image: postgres:15
+    container_name: postgres-pedido
+    environment:
+      POSTGRES_DB: pedidodb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - pedido_pgdata:/var/lib/postgresql/data
+
+  postgres-pagamento:
+    image: postgres:15
+    container_name: postgres-pagamento
+    environment:
+      POSTGRES_DB: pagamentodb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - pagamento_pgdata:/var/lib/postgresql/data
+
+  ####################### MICROSSERVIÇOS ########################
+
+  cliente-service:
+    build:
+      context: ./Cliente
+    container_name: cliente-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-cliente
+
+  produto-service:
+    build:
+      context: ./produto-service
+    container_name: produto-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres-produto
+
+  estoque-service:
+    build:
+      context: ./estoque-service
+    container_name: estoque-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres-estoque:
+        condition: service_healthy
+    restart: on-failure
+
+  pedido-service:
+    build:
+      context: ./Pedido
+    container_name: pedido-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres-pedido
+      - estoque-service
+      - pagamento-service
+
+  pedido-receiver-service:
+    build:
+      context: ./pedido-receiver-service
+    container_name: pedido-receiver-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - pedido-service
+
+  pagamento-service:
+    build:
+      context: ./pagamento-service
+    container_name: pagamento-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - postgres-pagamento
+
+volumes:
+  cliente_pgdata:
+  produto_pgdata:
+  estoque_pgdata:
+  pedido_pgdata:
+  pagamento_pgdata:

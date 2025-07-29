@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+
+  pagamento-service:
+    build:
+      context: ./pagamento-service
+    container_name: pagamento-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - postgres-pagamento
